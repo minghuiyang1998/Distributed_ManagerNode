@@ -1,9 +1,6 @@
 package com.manage.controller;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class NodeController {
@@ -14,12 +11,12 @@ public class NodeController {
     }
 
     @PostMapping("admin/node")
-    public String addWorkNode() {
-        return "add nodes";
+    public String addWorkNode(@RequestBody WorkNode body) {
+        return body.getIP() + " " + body.getPort();
     }
 
     @DeleteMapping("/admin/node")
-    public void deleteWorkNode() {
-        //
+    public void deleteWorkNode(@RequestBody WorkNode body) {
+
     }
 }

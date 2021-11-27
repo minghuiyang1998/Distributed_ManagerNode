@@ -9,5 +9,9 @@ run in localhost:8000(use IDEA)
 ```
 
 ##FrameWork
+BackEnd
 - Spring Boot: Web starter (Tomcat, Spring MVC)
 - ThymeLeaf
+FrontEnd
+- JQuery
+- Vue
