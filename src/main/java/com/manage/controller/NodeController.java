@@ -11,12 +11,12 @@ public class NodeController {
     }
 
     @PostMapping("admin/node")
-    public String addWorkNode(@RequestBody WorkNode body) {
+    public String addWorkNode(WorkNode body) {
         return body.getIP() + " " + body.getPort();
     }
 
     @DeleteMapping("/admin/node")
-    public void deleteWorkNode(@RequestBody WorkNode body) {
+    public void deleteWorkNode(WorkNode body) {
 
     }
 }
