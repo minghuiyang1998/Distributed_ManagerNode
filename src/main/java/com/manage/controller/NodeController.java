@@ -2,12 +2,17 @@ package com.manage.controller;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+// code + msg
 @RestController
 public class NodeController {
     @GetMapping("/admin/all")
-    public String getAllWorkNodes() {
+    public List<WorkNode> getAllWorkNodes() {
         // ajax
-        return "all nodes";
+//        return "Nodes: [{ip: xxxx, port:xxxx}, {...}]]";
+        ArrayList<WorkNode> workNodeArrayList = new ArrayList<WorkNode>();
+        return workNodeArrayList;
     }
 
     @PostMapping("admin/node")

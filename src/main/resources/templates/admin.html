@@ -7,8 +7,8 @@
     <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
 </head>
 <body>
-    <div>
-        <form action="/admin/node" method="POST" accept-charset="UTF-8">
+    <div id="add-form">
+        <form>
             <legend>Add A Worker Node</legend>
             <div>
                 <input type="text" name="ip" placeholder="IP">
@@ -21,7 +21,36 @@
             </div>
         </form>
     </div>
-    <div>
+    <script>
+        const addForm = new Vue({
+            el: '#add-form',
+            data: {
+                ip: '',
+                port: '',
+                parsed: '',
+            },
+            methods: {
+                onSubmit: () => {
+                    $.ajax({
+                        url: `/admin/node`,
+                        type: 'POST',
+                        body: {
+                            ip: this.ip,
+                            port: this.port,
+                        },
+                        success: (resp) => {
+                            if (resp.code == 0) {
+                                this.data.parsed = resp.data
+                            } else {
+                                alert(resp.msg)
+                            }
+                        }
+                    })
+                }
+            }
+        })
+    </script>
+    <div id="delete-form">
         <form action="/admin/node" method="DELETE" accept-charset="UTF-8">
             <legend>Delete A Worker Node</legend>
             <div>
@@ -34,23 +63,59 @@
                 <input type="submit" value="delete" onclick="onDeleteNodeButtonClick()">
             </div>
         </form>
-        <div>
-
-            <!--btn + 插入得到的结果-->
-        </div>
-        <script>
-            function onAddNodeButtonClick() {
-
-            }
-
-            function onDeleteNodeButtonClick() {
-
-            }
-
-            function onSearchNodeButtonClick() {
-
-            }
-        </script>
     </div>
+    <script>
+        const deleteForm = new Vue({
+            el: '#delete-form',
+            data: {
+                ip: '',
+                port: '',
+                parsed: '',
+            },
+            methods: {
+                onSubmit: () => {
+                    $.ajax({
+                        url: `/admin/node`,
+                        type: 'DELETE',
+                        success: (resp) => {
+                            if (resp.code == 0) {
+                                this.data.parsed = resp.data
+                            } else {
+                                alert(resp.msg)
+                            }
+                        }
+                    })
+                }
+            }
+        })
+    </script>
+    <div id="search-node">
+        <button>search all</button>
+    </div>
+    <script>
+        const searchNode = new Vue({
+            el: '#search-node',
+            data: {
+                ip: '',
+                port: '',
+                parsed: '',
+            },
+            methods: {
+                onSubmit: () => {
+                    $.ajax({
+                        url: `/admin/all`,
+                        type: 'GET',
+                        success: (resp) => {
+                            if (resp.code == 0) {
+                                this.data.parsed = resp.data
+                            } else {
+                                alert(resp.msg)
+                            }
+                        }
+                    })
+                }
+            }
+        })
+    </script>
 </body>
 </html>
