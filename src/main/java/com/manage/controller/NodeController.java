@@ -1,7 +1,6 @@
 package com.manage.controller;
 
 import com.manage.dao.NodesCenter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -9,13 +8,19 @@ import java.util.List;
 // code + msg
 @RestController
 public class NodeController {
+    private final NodesCenter nodesCenter;
 
-    NodesCenter nodesCenter = new NodesCenter();
+    public NodeController(NodesCenter nodesCenter) {
+        this.nodesCenter = nodesCenter;
+    }
 
     @GetMapping("/admin/all")
     public List<WorkNode> getAllWorkNodes() {
         // ajax
-//        return "Nodes: [{ip: xxxx, port:xxxx}, {...}]]";
+//        return "{
+//          code： 0,
+//          Nodes: [{ip: xxxx, port:xxxx}, {...}]]
+//        }";
         ArrayList<WorkNode> workNodeArrayList = new ArrayList<WorkNode>();
         return workNodeArrayList;
     }

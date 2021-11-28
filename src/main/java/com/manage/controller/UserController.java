@@ -6,10 +6,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class UserController {
-    NodesCenter nodesCenter = new NodesCenter();
+    private final NodesCenter nodesCenter;
+
+    public UserController(NodesCenter nodesCenter) {
+        this.nodesCenter = nodesCenter;
+    }
 
     @PostMapping("/user/crack")
     public String crackPassword() {
+        //......
         return "password";
     }
 }
