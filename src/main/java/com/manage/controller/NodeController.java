@@ -17,6 +17,7 @@ public class NodeController {
 
     @PostMapping("admin/node")
     public String addWorkNode(WorkNode body) {
+
         return body.getIP() + " " + body.getPort();
     }
 
