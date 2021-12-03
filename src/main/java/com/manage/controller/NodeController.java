@@ -22,6 +22,7 @@ public class NodeController {
 //          Nodes: [{ip: xxxx, port:xxxx}, {...}]]
 //        }";
         ArrayList<WorkNode> workNodeArrayList = new ArrayList<WorkNode>();
+
         return workNodeArrayList;
     }
 
