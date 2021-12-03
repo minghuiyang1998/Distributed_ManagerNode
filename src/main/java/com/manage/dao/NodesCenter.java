@@ -7,10 +7,14 @@ import java.util.concurrent.BlockingQueue;
 
 @Repository
 public class NodesCenter {
-    private static BlockingQueue<String> queue = new ArrayBlockingQueue<>(6);
+    private static BlockingQueue<WorkNode> queue = new ArrayBlockingQueue<>(6);
 
     public void add() {
-        queue.add("xxxx");
+
+    }
+
+    public static BlockingQueue<WorkNode> getQueue() {
+        return queue;
     }
     // static concurrent map
     // get
