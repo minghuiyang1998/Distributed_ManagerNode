@@ -10,14 +10,10 @@
 </head>
 <body>
     <div id="user-crack" class="form">
-        <div>
-            <input v-model="password" placeholder="password"
-                   maxlength="5" pattern="[a-z]{5}"
-                   autocapitalize="off" autocorrect="off" autofocus="autofocus">
-        </div>
-        <div>
-            <button @click="onSubmit">crack</button>
-        </div>
+        <input v-model="password" placeholder="password"
+               maxlength="5" pattern="[a-z]{5}"
+               autocapitalize="off" autocorrect="off" autofocus="autofocus">
+        <button @click="onSubmit">crack</button>
         <div v-if="cracked.length">{{cracked}}</div>
     </div>
     <script>
