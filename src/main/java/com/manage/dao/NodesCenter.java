@@ -12,7 +12,6 @@ public class NodesCenter {
     public void add() {
         queue.add("xxxx");
     }
-
     // static concurrent map
     // get
     // add

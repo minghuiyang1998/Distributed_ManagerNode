@@ -2,6 +2,7 @@ package com.manage.controller;
 
 import com.manage.dao.NodesCenter;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -13,8 +14,9 @@ public class UserController {
     }
 
     @PostMapping("/user/crack")
-    public String crackPassword() {
+    public String crackPassword(RequestBody body) {
+        System.out.println(body.getPasswordMd5());
         //......
-        return "password";
+        return "";
     }
 }
