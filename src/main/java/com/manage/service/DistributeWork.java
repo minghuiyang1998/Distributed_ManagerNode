@@ -4,50 +4,99 @@ import com.manage.dao.WorkNode;
 import com.manage.dao.NodesCenter;
 import org.springframework.stereotype.Service;
 
+import javax.security.auth.login.Configuration;
+import java.util.ArrayList;
+import java.util.Vector;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 @Service
 public class DistributeWork {
-    private String subtaskPwdStart;
-    private int distributedSize;
+    Vector<Future<String>> futures;
+    ExecutorService es;
+    ArrayList<WorkNode> availableNodes;
+    private String subtaskPrefix;
     private String md5Password;
 
     public DistributeWork() {
-        this.subtaskPwdStart = "aaaaa";
-        this.distributedSize = 0;
+        this.subtaskPrefix = "aa";
+        this.futures = new Vector<>();
+        this.es = Executors.newCachedThreadPool();
+        this.availableNodes = new ArrayList<>();
     }
 
     public void setMd5Password(String md5Password) {
         this.md5Password = md5Password;
     }
 
-
     // TODO: 12/3/21 Concurrency Problem?
-    public String distribute() {
-        do {
-            for (WorkNode node : NodesCenter.getQueue()) {
-                if (node.isAvailable()) {
-                    node.setAvailable(false);
-                    SocketEntity socket = setUpConnection(node);
-                    String subtaskPwdEnd = ServiceConfig.getPwdEnd(subtaskPwdStart);
-                    String data = subtaskPwdStart + "," + subtaskPwdEnd + "," + md5Password;
-                    socket.sendData(data);
-                    String ret = socket.receiveData();
-                    if (!ret.equals("Not found")) {
-                        return ret;
-                    }
-                    socket.closeSocket();
-                    node.setAvailable(true);
-                    distributedSize += ServiceConfig.subTaskSize;
-                    subtaskPwdStart = ServiceConfig.add(subtaskPwdEnd, 1);
-                    if (distributedSize >= ServiceConfig.totalTaskSize) break;
-                }
-            }
-        } while (distributedSize < ServiceConfig.totalTaskSize);
-        return "Not found";
+    public String distributeWork() throws ExecutionException, InterruptedException {
+        while(!subtaskPrefix.equals("ZZ")) {
+            setAvailableNodes();
+            String message = subtaskPrefix + "," + md5Password;
+            String s = distributeWorkOnce(message);
+            if(!s.equals(ServiceConfig.NOT_FOUND_MESSAGE)) return s;
+        }
+        return ServiceConfig.NOT_FOUND_MESSAGE;
     }
 
-    public SocketEntity setUpConnection(WorkNode node) {
-        String ip = node.getIP();
-        int port = Integer.parseInt(node.getPort());
-        return new SocketEntity(ip, port);
+    public void setAvailableNodes() {
+        for(WorkNode workNode: NodesCenter.getQueue()) {
+            if(workNode.isAvailable()) {
+                availableNodes.add(workNode);
+                workNode.setAvailable(false);
+            }
+        }
     }
+
+    public String distributeWorkOnce(String message) throws ExecutionException, InterruptedException {
+        for(WorkNode workNode: availableNodes) {
+            String ip = workNode.getIP();
+            int port = Integer.parseInt(workNode.getPort());
+            SocketThread socketThread = new SocketThread(ip, port, message);
+            Future<String> future = es.submit(socketThread);
+            futures.add(future);
+            if(subtaskPrefix.equals(ServiceConfig.END_PREFIX)) break;
+            modifyPrefix();
+        }
+
+        es.shutdown();
+        for(WorkNode workNode: availableNodes) {
+            workNode.setAvailable(true);
+        }
+        availableNodes.clear();
+
+        for(Future<String> future: futures) {
+            String ret = future.get();
+            if(!ret.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
+                return ret;
+            }
+        }
+        return ServiceConfig.NOT_FOUND_MESSAGE;
+    }
+
+    private void modifyPrefix() {
+        StringBuilder strBuilder = new StringBuilder(subtaskPrefix);
+        char first = subtaskPrefix.charAt(0);
+        char second = subtaskPrefix.charAt(1);
+        if(second == 'z') {
+            strBuilder.setCharAt(1, 'A');
+        } else if (second == 'Z') {
+            if(first == 'z') {
+                strBuilder.setCharAt(0, 'A');
+                strBuilder.setCharAt(1, 'a');
+            } else if(first == 'Z') {
+                return;
+            } else {
+                strBuilder.setCharAt(0, (char)(first+1));
+                strBuilder.setCharAt(1, 'a');
+            }
+        } else {
+            strBuilder.setCharAt(1, (char) (second+1));
+        }
+        subtaskPrefix = strBuilder.toString();
+    }
+
 }

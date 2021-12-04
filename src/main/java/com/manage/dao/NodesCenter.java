@@ -13,6 +13,20 @@ public class NodesCenter {
 
     }
 
+    public boolean hasAvailableNode() {
+        for(WorkNode node: queue) {
+            if(node.isAvailable()) return true;
+        }
+        return false;
+    }
+
+    public WorkNode getAvailableNode() {
+        for(WorkNode node: queue) {
+            if(node.isAvailable()) return node;
+        }
+        return null;
+    }
+
     public static BlockingQueue<WorkNode> getQueue() {
         return queue;
     }

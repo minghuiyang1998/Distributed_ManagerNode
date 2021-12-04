@@ -2,13 +2,15 @@ package com.manage.service;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.concurrent.Callable;
 
-public class SocketEntity {
+public class SocketThread implements Callable<String> {
     Socket socket;
+    String dataSend;
     OutputStream outputStream;
     InputStream inputStream;
 
-    public SocketEntity(String hostName, int portNum) {
+    public SocketThread(String hostName, int portNum, String dataSend) {
         try {
             this.socket = new Socket(hostName, portNum);
             this.outputStream = socket.getOutputStream();
@@ -16,11 +18,12 @@ public class SocketEntity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        this.dataSend = dataSend;
     }
 
-    public void sendData(String data) {
+    public void sendData() {
         PrintWriter printWriter = new PrintWriter(outputStream);
-        printWriter.write(data);
+        printWriter.write(this.dataSend);
         printWriter.flush();
         printWriter.close();
     }
@@ -46,5 +49,13 @@ public class SocketEntity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public String call(){
+        sendData();
+        String subtaskRes = receiveData();
+        closeSocket();
+        return subtaskRes;
     }
 }
