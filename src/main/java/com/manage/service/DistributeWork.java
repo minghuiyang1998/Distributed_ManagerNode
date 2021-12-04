@@ -34,12 +34,28 @@ public class DistributeWork {
     // TODO: 12/3/21 Concurrency Problem?
     public String distributeWork() throws ExecutionException, InterruptedException {
         while(!subtaskPrefix.equals("ZZ")) {
+//            System.out.println(subtaskPrefix);
             setAvailableNodes();
+            if(noAvailableNodes()) return ServiceConfig.NO_AVAILABLE_NODES_MESSAGE;
             String message = subtaskPrefix + "," + md5Password;
             String s = distributeWorkOnce(message);
-            if(!s.equals(ServiceConfig.NOT_FOUND_MESSAGE)) return s;
+            if(!s.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
+                s = ServiceConfig.FIND_PWD_MESSAGE + s;
+                return s;
+            }
         }
         return ServiceConfig.NOT_FOUND_MESSAGE;
+    }
+
+    public boolean noAvailableNodes() throws InterruptedException {
+        int count = 0;
+        while(availableNodes.size() == 0) {
+            if(count == 2) return true;
+            count++;
+            Thread.sleep(1000);
+            setAvailableNodes();
+        }
+        return false;
     }
 
     public void setAvailableNodes() {
