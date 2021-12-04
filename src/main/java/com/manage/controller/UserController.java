@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -23,10 +24,10 @@ public class UserController {
 
     @PostMapping("/user/crack")
     @ResponseBody
-    public Map<String, String> crackPassword(RequestBody body) throws ExecutionException, InterruptedException {
+    public Map<String, String> crackPassword(RequestBody body) throws IOException, ExecutionException, InterruptedException {
         String md5Password = body.getPasswordMd5();
-
         distributeWork.setMd5Password(md5Password);
+        System.out.println("md5Pwd: " + distributeWork.getMd5Password());
         String res = distributeWork.distributeWork();
         String[] parseStr = ServiceConfig.parse(res);
         Map<String, String> map = new HashMap<>();

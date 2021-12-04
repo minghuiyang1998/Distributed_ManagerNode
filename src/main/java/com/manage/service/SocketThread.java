@@ -5,42 +5,34 @@ import java.net.Socket;
 import java.util.concurrent.Callable;
 
 public class SocketThread implements Callable<String> {
+    String ip;
     Socket socket;
     String dataSend;
-    OutputStream outputStream;
-    InputStream inputStream;
 
-    public SocketThread(String hostName, int portNum, String dataSend) {
-        try {
-            this.socket = new Socket(hostName, portNum);
-            this.outputStream = socket.getOutputStream();
-            this.inputStream = socket.getInputStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public SocketThread(String ip, int portNum, String dataSend) throws IOException {
+        this.ip = ip;
+        this.socket = new Socket(ip, portNum);
         this.dataSend = dataSend;
     }
 
-    public void sendData() {
+    public void sendData() throws IOException {
+        System.out.println("IP: " + this.ip + " Sending data: " + this.dataSend);
+        OutputStream outputStream = socket.getOutputStream();
         PrintWriter printWriter = new PrintWriter(outputStream);
-        printWriter.write(this.dataSend);
+        printWriter.println(this.dataSend);
         printWriter.flush();
-        printWriter.close();
     }
 
-    public String receiveData() {
+    public String receiveData() throws IOException {
         // TODO: 12/3/21 Timer?
+        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         String reply;
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        try {
-            if((reply = bufferedReader.readLine()) != null) {
-                bufferedReader.close();
-                return reply;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        reply = in.readLine();
+        while(reply == null) {
+            reply = in.readLine();
         }
-        return null;
+        in.close();
+        return reply;
     }
 
     public void closeSocket() {
@@ -52,10 +44,13 @@ public class SocketThread implements Callable<String> {
     }
 
     @Override
-    public String call(){
+    public String call() throws IOException {
         sendData();
+        System.out.println("IP: " + this.ip + " Massage sent successfully...");
         String subtaskRes = receiveData();
+        System.out.println("IP: " + this.ip + " Received message " + subtaskRes);
         closeSocket();
+        System.out.println("IP: " + this.ip + " Socket closed successfully...");
         return subtaskRes;
     }
 }

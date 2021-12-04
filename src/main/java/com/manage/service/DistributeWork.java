@@ -5,6 +5,7 @@ import com.manage.dao.NodesCenter;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.Configuration;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
@@ -31,16 +32,21 @@ public class DistributeWork {
         this.md5Password = md5Password;
     }
 
+    public String getMd5Password() {
+        return md5Password;
+    }
+
     // TODO: 12/3/21 Concurrency Problem?
-    public String distributeWork() throws ExecutionException, InterruptedException {
+    public String distributeWork() throws IOException, ExecutionException, InterruptedException {
         while(!subtaskPrefix.equals("ZZ")) {
 //            System.out.println(subtaskPrefix);
-            setAvailableNodes();
+//            setAvailableNodes();
+            setNodesForTest();
             if(noAvailableNodes()) return ServiceConfig.NO_AVAILABLE_NODES_MESSAGE;
-            String message = subtaskPrefix + "," + md5Password;
-            String s = distributeWorkOnce(message);
+            String s = distributeWorkOnce();
             if(!s.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
                 s = ServiceConfig.FIND_PWD_MESSAGE + s;
+
                 return s;
             }
         }
@@ -67,10 +73,20 @@ public class DistributeWork {
         }
     }
 
-    public String distributeWorkOnce(String message) throws ExecutionException, InterruptedException {
+    public void setNodesForTest() {
+        WorkNode workNode1 = new WorkNode("128.197.11.36", "58219");
+        WorkNode workNode2 = new WorkNode("128.197.11.45", "58219");
+        availableNodes.add(workNode1);
+        availableNodes.add(workNode2);
+    }
+
+    public String distributeWorkOnce() throws IOException, ExecutionException, InterruptedException {
         for(WorkNode workNode: availableNodes) {
+            String message = subtaskPrefix + "," + md5Password;
+            System.out.println("message: " + message);
             String ip = workNode.getIP();
             int port = Integer.parseInt(workNode.getPort());
+            System.out.println("IP:" + ip + " Port: " + port + " Establishing socket...");
             SocketThread socketThread = new SocketThread(ip, port, message);
             Future<String> future = es.submit(socketThread);
             futures.add(future);
