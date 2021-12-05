@@ -31,7 +31,7 @@ public class NodeController {
 //          Nodes: [{ip: xxxx, port:xxxx}, {...}]]
 //        }";
         //
-        return new NodeResponse(0, getWorkNodeList().toString());
+        return new NodeResponse(0, getWorkNodeList());
     }
 
     @PostMapping("admin/node")
@@ -44,7 +44,7 @@ public class NodeController {
             e.printStackTrace();
             code = 1;   // the thread is interrupted
         }
-        return new NodeResponse(code, getWorkNodeList().toString());
+        return new NodeResponse(code, getWorkNodeList());
 //        return body.getIP() + " " + body.getPort();
     }
 
@@ -55,14 +55,14 @@ public class NodeController {
         if (!nodesCenter.remove(body)) {
             code = 2; // failed to delete the node
         }
-        return new NodeResponse(code, getWorkNodeList().toString());
+        return new NodeResponse(code, getWorkNodeList());
     }
 
     class NodeResponse {
         private int code;
-        private String nodes;
+        private List<WorkNode> nodes;
 
-        public NodeResponse(int code, String nodes) {
+        public NodeResponse(int code, List<WorkNode> nodes) {
             this.code = code;
             this.nodes = nodes;
         }
@@ -71,7 +71,7 @@ public class NodeController {
             return code;
         }
 
-        public String getNodes() {
+        public List<WorkNode> getNodes() {
             return nodes;
         }
     }
