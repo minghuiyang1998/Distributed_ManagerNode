@@ -1,7 +1,10 @@
 package com.manage.controller;
 
 import com.manage.dao.NodesCenter;
+import org.apache.coyote.Response;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.w3c.dom.Node;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,25 +17,62 @@ public class NodeController {
         this.nodesCenter = nodesCenter;
     }
 
+    public List<WorkNode> getWorkNodeList() {
+        List<WorkNode> workNodeList = nodesCenter.traverse();
+        return workNodeList;
+    }
+
     @GetMapping("/admin/all")
-    public List<WorkNode> getAllWorkNodes() {
+    @ResponseBody
+    public NodeResponse getAllWorkNodes() {
         // ajax
 //        return "{
 //          code： 0,
 //          Nodes: [{ip: xxxx, port:xxxx}, {...}]]
 //        }";
-        ArrayList<WorkNode> workNodeArrayList = new ArrayList<WorkNode>();
-
-        return workNodeArrayList;
+        //
+        return new NodeResponse(0, getWorkNodeList().toString());
     }
 
     @PostMapping("admin/node")
-    public String addWorkNode(WorkNode body) {
-        return body.getIP() + " " + body.getPort();
+    @ResponseBody
+    public NodeResponse addWorkNode(WorkNode body) {
+        int code = 0;
+        try {
+            nodesCenter.add(body);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            code = 1;   // the thread is interrupted
+        }
+        return new NodeResponse(code, getWorkNodeList().toString());
+//        return body.getIP() + " " + body.getPort();
     }
 
     @DeleteMapping("/admin/node")
-    public void deleteWorkNode(WorkNode body) {
+    @ResponseBody
+    public NodeResponse deleteWorkNode(WorkNode body) {
+        int code = 0;
+        if (!nodesCenter.remove(body)) {
+            code = 2; // failed to delete the node
+        }
+        return new NodeResponse(code, getWorkNodeList().toString());
+    }
 
+    class NodeResponse {
+        private int code;
+        private String nodes;
+
+        public NodeResponse(int code, String nodes) {
+            this.code = code;
+            this.nodes = nodes;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
+        public String getNodes() {
+            return nodes;
+        }
     }
 }
