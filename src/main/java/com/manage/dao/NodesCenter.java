@@ -25,17 +25,6 @@ public class NodesCenter {
         return workNodeQueue.remove(workNode);
     }
 
-    public WorkNode getHead() {
-        // dequeue head and return workNode
-        WorkNode workNode = null;
-        try {
-            workNode = workNodeQueue.take();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return workNode;
-    }
-
     public List<WorkNode> traverse() {
         // traverse BlockingQueue and return a list of nodes
         List<WorkNode> queue2List = new ArrayList<>();
