@@ -27,6 +27,10 @@ public class DistributeWork {
         this.availableNodes = new ArrayList<>();
     }
 
+    public void setSubtaskPrefix(String subtaskPrefix) {
+        this.subtaskPrefix = subtaskPrefix;
+    }
+
     public void setMd5Password(String md5Password) {
         this.md5Password = md5Password;
     }
@@ -37,11 +41,10 @@ public class DistributeWork {
 
     // TODO: 12/3/21 Concurrency Problem?
     public String distributeWork() throws IOException, ExecutionException, InterruptedException {
-        while(!subtaskPrefix.equals("ZZ")) {
-//            System.out.println(subtaskPrefix);
+        while(!subtaskPrefix.equals(ServiceConfig.END_DISTRIBUTE)) {
 //            setAvailableNodes();
-            this.es = Executors.newCachedThreadPool();
             setNodesForTest();
+            this.es = Executors.newCachedThreadPool();
             if(noAvailableNodes()) return ServiceConfig.NO_AVAILABLE_NODES_MESSAGE;
             String s = distributeWorkOnce();
             if(!s.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
@@ -91,7 +94,7 @@ public class DistributeWork {
             SocketThread socketThread = new SocketThread(ip, port, message);
             Future<String> future = es.submit(socketThread);
             futures.add(future);
-            if(subtaskPrefix.equals(ServiceConfig.END_PREFIX)) break;
+            if(subtaskPrefix.equals(ServiceConfig.END_DISTRIBUTE)) break;
             modifyPrefix();
         }
 
@@ -121,6 +124,7 @@ public class DistributeWork {
                 strBuilder.setCharAt(0, 'A');
                 strBuilder.setCharAt(1, 'a');
             } else if(first == 'Z') {
+                subtaskPrefix = ServiceConfig.END_DISTRIBUTE;
                 return;
             } else {
                 strBuilder.setCharAt(0, (char)(first+1));

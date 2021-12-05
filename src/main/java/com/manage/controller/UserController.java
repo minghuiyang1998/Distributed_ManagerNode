@@ -27,6 +27,7 @@ public class UserController {
     public Map<String, String> crackPassword(RequestBody body) throws IOException, ExecutionException, InterruptedException {
         String md5Password = body.getPasswordMd5();
         distributeWork.setMd5Password(md5Password);
+        distributeWork.setSubtaskPrefix(ServiceConfig.START_PREFIX);
         System.out.println("md5Pwd: " + distributeWork.getMd5Password());
         String res = distributeWork.distributeWork();
         String[] parseStr = ServiceConfig.parse(res);
