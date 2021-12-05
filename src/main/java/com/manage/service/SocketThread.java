@@ -11,6 +11,7 @@ public class SocketThread implements Callable<String> {
 
     public SocketThread(String ip, int portNum, String dataSend) throws IOException {
         this.ip = ip;
+        // TODO: 12/5/21 Handle the timeout of Socket Establishment
         this.socket = new Socket(ip, portNum);
         this.dataSend = dataSend;
     }

@@ -24,7 +24,6 @@ public class DistributeWork {
     public DistributeWork() {
         this.subtaskPrefix = "aa";
         this.futures = new Vector<>();
-        this.es = Executors.newCachedThreadPool();
         this.availableNodes = new ArrayList<>();
     }
 
@@ -41,12 +40,12 @@ public class DistributeWork {
         while(!subtaskPrefix.equals("ZZ")) {
 //            System.out.println(subtaskPrefix);
 //            setAvailableNodes();
+            this.es = Executors.newCachedThreadPool();
             setNodesForTest();
             if(noAvailableNodes()) return ServiceConfig.NO_AVAILABLE_NODES_MESSAGE;
             String s = distributeWorkOnce();
             if(!s.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
                 s = ServiceConfig.FIND_PWD_MESSAGE + s;
-
                 return s;
             }
         }
@@ -76,8 +75,10 @@ public class DistributeWork {
     public void setNodesForTest() {
         WorkNode workNode1 = new WorkNode("128.197.11.36", "58219");
         WorkNode workNode2 = new WorkNode("128.197.11.45", "58219");
+        WorkNode workNode3 = new WorkNode("128.197.11.40", "58219");
         availableNodes.add(workNode1);
         availableNodes.add(workNode2);
+        availableNodes.add(workNode3);
     }
 
     public String distributeWorkOnce() throws IOException, ExecutionException, InterruptedException {
