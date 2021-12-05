@@ -1,13 +1,11 @@
 package com.manage.controller;
 
 import com.manage.dao.NodesCenter;
-import org.apache.coyote.Response;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.w3c.dom.Node;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+
 // code + msg
 @RestController
 public class NodeController {
@@ -22,6 +20,18 @@ public class NodeController {
         return workNodeList;
     }
 
+    private boolean checkFormat(WorkNode body) {
+        /**
+         * IPV4 address validation regex pattern from:
+         * https://stackoverflow.com/questions/5284147/validating-ipv4-addresses-with-regexp
+         * Port number validation regex pattern from:
+         * https://web.archive.org/web/20151029043426/http://utilitymill.com/utility/Regex_For_Range
+         */
+        Pattern ip = Pattern.compile("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
+        Pattern port = Pattern.compile("^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$");
+        return !ip.matcher(body.getIP()).find() || !port.matcher(body.getPort()).find();
+    }
+
     @GetMapping("/admin/all")
     @ResponseBody
     public NodeResponse getAllWorkNodes() {
@@ -31,48 +41,62 @@ public class NodeController {
 //          Nodes: [{ip: xxxx, port:xxxx}, {...}]]
 //        }";
         //
-        return new NodeResponse(0, getWorkNodeList());
+        return new NodeResponse(0, "ok", getWorkNodeList());
     }
 
     @PostMapping("admin/node")
     @ResponseBody
     public NodeResponse addWorkNode(WorkNode body) {
+        // check input format
+        if (checkFormat(body)) {
+            String invalidFormat = "input data is invalid for ipv4 address or port number";
+            return new NodeResponse(2, invalidFormat, getWorkNodeList());
+        }
         int code = 0;
+        String msg = "ok";
         try {
             nodesCenter.add(body);
         } catch (InterruptedException e) {
             e.printStackTrace();
             code = 1;   // the thread is interrupted
+            msg = "current thread is interrupted";
         }
-        return new NodeResponse(code, getWorkNodeList());
-//        return body.getIP() + " " + body.getPort();
+        return new NodeResponse(code, msg, getWorkNodeList());
     }
 
     @DeleteMapping("/admin/node")
     @ResponseBody
     public NodeResponse deleteWorkNode(WorkNode body) {
-        int code = 0;
-        if (!nodesCenter.remove(body)) {
-            code = 2; // failed to delete the node
+        // check input format
+        if (checkFormat(body)) {
+            String invalidFormat = "input data is invalid for ipv4 address or port number";
+            return new NodeResponse(2, invalidFormat, getWorkNodeList());
         }
-        return new NodeResponse(code, getWorkNodeList());
+        int code = 0;
+        String msg = "ok";
+        if (!nodesCenter.remove(body)) {
+            code = 3; // failed to delete the node
+            msg = "input node was not found in the queue";
+        }
+        return new NodeResponse(code, msg, getWorkNodeList());
     }
 
     class NodeResponse {
         private int code;
-        private List<WorkNode> nodes;
+        private String msg;
+        private List<WorkNode> data;
 
-        public NodeResponse(int code, List<WorkNode> nodes) {
+        public NodeResponse(int code, String msg, List<WorkNode> nodesList) {
             this.code = code;
-            this.nodes = nodes;
+            this.data = nodesList;
         }
 
         public int getCode() {
             return code;
         }
 
-        public List<WorkNode> getNodes() {
-            return nodes;
+        public List<WorkNode> getData() {
+            return data;
         }
     }
 }
