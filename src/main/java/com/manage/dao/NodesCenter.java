@@ -1,18 +1,39 @@
 package com.manage.dao;
 
+import com.manage.controller.WorkNode;
 import org.springframework.stereotype.Repository;
 
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 @Repository
 public class NodesCenter {
-    private static BlockingQueue<String> queue = new ArrayBlockingQueue<>(6);
+    private static BlockingQueue<WorkNode> workNodeQueue = new LinkedBlockingQueue<>();
 
-    public void add() {
-        queue.add("xxxx");
+    public BlockingQueue<WorkNode> getWorkNodeQueue() {
+        return workNodeQueue;
     }
-    // static concurrent map
-    // get
-    // add
+
+    public void add(WorkNode workNode) throws InterruptedException {
+        workNodeQueue.put(workNode);
+    }
+
+    public boolean remove(WorkNode workNode) {
+        return workNodeQueue.remove(workNode);
+    }
+
+    public List<WorkNode> traverse() {
+        // traverse BlockingQueue and return a list of nodes
+        List<WorkNode> queue2List = new ArrayList<>();
+        Iterator<WorkNode> iterator = workNodeQueue.iterator();
+        while (iterator.hasNext()) {
+            queue2List.add(iterator.next());
+        }
+        return queue2List;
+    }
+
 }
+
