@@ -13,7 +13,14 @@
         <input v-model="password" placeholder="password"
                maxlength="5" pattern="[a-z]{5}"
                autocapitalize="off" autocorrect="off" autofocus="autofocus">
-        <button @click="onSubmit">crack</button>
+        <button @click="onSubmit" class="sub-btn">
+            {{btnText}}
+            <div v-if="isLoading" class="loading">
+                <span>.</span>
+                <span>.</span>
+                <span>.</span>
+            </div>
+        </button>
         <div v-if="cracked.length">{{cracked}}</div>
     </div>
     <script>
@@ -22,9 +29,16 @@
             data: {
                 password: "",
                 cracked: "",
+                isLoading: false,
+                btnText: "submit"
             },
             methods: {
                 onSubmit() {
+                    this.cracked = "";
+                    if (this.isLoading) return;
+
+                    this.isLoading = true;
+                    this.btnText = ""
                     const passwordMd5 = $.md5(this.password);
                     console.log(passwordMd5);
                     $.ajax({
@@ -34,6 +48,7 @@
                             passwordMd5,
                         },
                         success: (resp) => {
+                            this.isLoading = false;
                             if (resp.code == 0) {
                                 this.cracked = resp.data;
                             } else {
@@ -42,6 +57,10 @@
                             this.password = "";
                         }
                     })
+                    setTimeout(() => {
+                        this.isLoading = false;
+                        this.cracked = "timeout!";
+                    }, 120000);
                 }
             }
         })
