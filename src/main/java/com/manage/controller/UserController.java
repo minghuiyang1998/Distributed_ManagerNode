@@ -33,7 +33,9 @@ public class UserController {
         String[] parseStr = ServiceConfig.parse(res);
         Map<String, String> map = new HashMap<>();
         map.put("code", parseStr[0]);
-        map.put("data", parseStr[1]);
+        map.put("message", parseStr[1]);
+        map.put("data", parseStr[2]);
+        System.out.println(map);
         return map;
     }
 }

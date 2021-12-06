@@ -39,11 +39,10 @@ public class DistributeWork {
         return md5Password;
     }
 
-    // TODO: 12/3/21 Concurrency Problem?
     public String distributeWork() throws IOException, ExecutionException, InterruptedException {
         while(!subtaskPrefix.equals(ServiceConfig.END_DISTRIBUTE)) {
-//            setAvailableNodes();
-            setNodesForTest();
+            setAvailableNodes();
+//            setNodesForTest();
             this.es = Executors.newCachedThreadPool();
             if(noAvailableNodes()) return ServiceConfig.NO_AVAILABLE_NODES_MESSAGE;
             String s = distributeWorkOnce();
@@ -76,12 +75,10 @@ public class DistributeWork {
     }
 
     public void setNodesForTest() {
-        WorkNode workNode1 = new WorkNode("128.197.11.36", "58219");
-        WorkNode workNode2 = new WorkNode("128.197.11.45", "58219");
-        WorkNode workNode3 = new WorkNode("128.197.11.40", "58219");
+        WorkNode workNode1 = new WorkNode("128.197.11.36", "58001");
+        WorkNode workNode2 = new WorkNode("128.197.11.40", "58001");
         availableNodes.add(workNode1);
         availableNodes.add(workNode2);
-        availableNodes.add(workNode3);
     }
 
     public String distributeWorkOnce() throws IOException, ExecutionException, InterruptedException {
@@ -107,9 +104,11 @@ public class DistributeWork {
         for(Future<String> future: futures) {
             String ret = future.get();
             if(!ret.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
+                futures.clear();
                 return ret;
             }
         }
+        futures.clear();
         return ServiceConfig.NOT_FOUND_MESSAGE;
     }
 
