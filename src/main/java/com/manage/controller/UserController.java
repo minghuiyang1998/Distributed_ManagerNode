@@ -16,5 +16,6 @@ public class UserController {
     public String crackPassword() {
         //......
         return "password";
+//        return "user";
     }
 }
