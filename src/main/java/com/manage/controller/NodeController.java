@@ -88,12 +88,15 @@ public class NodeController {
 
         public NodeResponse(int code, String msg, List<WorkNode> nodesList) {
             this.code = code;
+            this.msg = msg;
             this.data = nodesList;
         }
 
         public int getCode() {
             return code;
         }
+
+        public String getMsg() {return msg;}
 
         public List<WorkNode> getData() {
             return data;
