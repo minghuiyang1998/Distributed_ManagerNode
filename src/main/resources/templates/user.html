@@ -36,6 +36,10 @@
             },
             methods: {
                 onSubmit() {
+                    if (this.password.length < 5) {
+                        alert("invalid input! please enter 5 character!")
+                        return;
+                    }
                     // clear prev
                     this.cracked = "";
                     this.md5 = "";
