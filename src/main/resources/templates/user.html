@@ -35,7 +35,7 @@
                         },
                         success: (resp) => {
                             if (resp.code == 0) {
-                                this.cracked = resp.cracked;
+                                this.cracked = resp.data;
                             } else {
                                 console.log("resp")
                                 // alert(resp.msg)
