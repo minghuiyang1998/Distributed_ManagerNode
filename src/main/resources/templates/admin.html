@@ -62,6 +62,10 @@
                     $.ajax({
                         url: `/admin/node`,
                         type: 'DELETE',
+                        data: {
+                            ip: this.ip,
+                            port: this.port,
+                        },
                         success: (resp) => {
                             if (resp.code == 0) {
                                 alert("Delete Node Successfully!")
@@ -89,44 +93,7 @@
         const searchNode = new Vue({
             el: '#search-node',
             data: {
-                nodes:[
-                    {
-                        ip:"123.0.0.1",
-                        port:"9000",
-                    },
-                    {
-                        ip:"123.0.0.1",
-                        port:"9000",
-                    },
-                    {
-                        ip:"123.0.0.1",
-                        port:"9000",
-                    },
-                    {
-                        ip:"123.0.0.1",
-                        port:"9000",
-                    },
-                    {
-                        ip:"123.0.0.1",
-                        port:"9000",
-                    },
-                    {
-                        ip:"123.0.0.1",
-                        port:"9000",
-                    },
-                    {
-                        ip:"123.0.0.1",
-                        port:"9000",
-                    },
-                    {
-                        ip:"123.0.0.1",
-                        port:"9000",
-                    },
-                    {
-                        ip:"123.0.0.1",
-                        port:"9000",
-                    },
-                ],
+                nodes: [],
             },
             methods: {
                 onSearchClick() {
@@ -135,7 +102,7 @@
                         type: 'GET',
                         success: (resp) => {
                             if (resp.code == 0) {
-                                this.data.nodes = resp.data
+                                this.nodes = resp.data
                             } else {
                                 alert(resp.msg)
                             }
