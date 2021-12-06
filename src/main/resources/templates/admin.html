@@ -62,6 +62,10 @@
                     $.ajax({
                         url: `/admin/node`,
                         type: 'DELETE',
+                        data: {
+                            ip: this.ip,
+                            port: this.port,
+                        },
                         success: (resp) => {
                             if (resp.code == 0) {
                                 alert("Delete Node Successfully!")
