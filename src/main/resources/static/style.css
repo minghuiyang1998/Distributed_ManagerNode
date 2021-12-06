@@ -17,6 +17,8 @@ body {
 .form div,input,button {
     margin: 2px 10px;
     text-align: center;
+    font-size: 12px;
+    word-wrap: break-word;
 }
 
 .form button {
