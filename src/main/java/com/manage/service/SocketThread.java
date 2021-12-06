@@ -8,32 +8,54 @@ public class SocketThread implements Callable<String> {
     String ip;
     Socket socket;
     String dataSend;
+    boolean socketEstablishError = false;
+    boolean socketCrashError = false;
 
-    public SocketThread(String ip, int portNum, String dataSend) throws IOException {
+    public SocketThread(String ip, int portNum, String dataSend) {
         this.ip = ip;
-        // TODO: 12/5/21 Handle the timeout of Socket Establishment
-        this.socket = new Socket(ip, portNum);
         this.dataSend = dataSend;
-    }
-
-    public void sendData() throws IOException {
-        System.out.println("IP: " + this.ip + " Sending data: " + this.dataSend);
-        OutputStream outputStream = socket.getOutputStream();
-        PrintWriter printWriter = new PrintWriter(outputStream);
-        printWriter.println(this.dataSend);
-        printWriter.flush();
-    }
-
-    public String receiveData() throws IOException {
-        // TODO: 12/3/21 Timer?
-        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        String reply;
-        reply = in.readLine();
-        while(reply == null) {
-            reply = in.readLine();
+        try {
+            this.socket = new Socket(ip, portNum);
+        } catch (Exception e) {
+            System.out.println("Socket establish time out");
+            socketEstablishError = true;
         }
-        in.close();
-        return reply;
+    }
+
+    public void sendData() {
+        try {
+            OutputStream outputStream = socket.getOutputStream();
+            PrintWriter printWriter = new PrintWriter(outputStream);
+            printWriter.println(this.dataSend);
+            printWriter.flush();
+        } catch (IOException e) {
+            System.out.println("Socket Crash, sending data error");
+            socketCrashError = true;
+        }
+
+    }
+
+    public String receiveData() {
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            String reply;
+            reply = in.readLine();
+            long startTime = System.currentTimeMillis();
+            while (reply == null) {
+                reply = in.readLine();
+                long endTime = System.currentTimeMillis();
+                if((endTime - startTime)/1000 > 15) {
+                    System.out.println("Socket Crash, receiving data error");
+                    socketCrashError = true;
+                }
+            }
+            in.close();
+            return reply;
+        } catch (IOException e) {
+            System.out.println("Socket Crash, receiving data error");
+            socketCrashError = true;
+        }
+        return "";
     }
 
     public void closeSocket() {
@@ -45,13 +67,19 @@ public class SocketThread implements Callable<String> {
     }
 
     @Override
-    public String call() throws IOException {
+    public String call() {
         sendData();
         System.out.println("IP: " + this.ip + " Massage sent successfully...");
         String subtaskRes = receiveData();
         System.out.println("IP: " + this.ip + " Received message " + subtaskRes);
+        if(subtaskRes.equals(""))  subtaskRes = this.ip;
         closeSocket();
         System.out.println("IP: " + this.ip + " Socket closed successfully...");
         return subtaskRes;
     }
+
+    public String getIp() {
+        return ip;
+    }
+
 }

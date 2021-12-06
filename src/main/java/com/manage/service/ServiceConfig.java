@@ -3,13 +3,15 @@ package com.manage.service;
 public class ServiceConfig {
     public static final String NOT_FOUND_MESSAGE = "101 Not Found";
     public static final String NO_AVAILABLE_NODES_MESSAGE = "102 No Available Nodes";
+    public static final String SOCKET_ERROR_MESSAGE1 = "103 Socket Establishment Error";
+    public static final String SOCKET_ERROR_MESSAGE2 = "104 Socket Crash ERROR. Perhaps because of unstable worker node.";
     public static final String FIND_PWD_MESSAGE = "0 OK ";
     public static final String START_PREFIX = "aa";
     public static final String END_DISTRIBUTE = "End";
 
     public static String[] parse(String res) {
         String code = "", message = "", data = "";
-        int i = 0, j = res.length();
+        int i, j;
         for(i = 0; i < res.length(); i++) {
             if(res.charAt(i) == ' ') {
                 code = res.substring(0, i);
