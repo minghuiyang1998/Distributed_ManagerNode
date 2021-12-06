@@ -48,8 +48,8 @@ public class DistributeWork {
 
     public String distributeWork() throws IOException, ExecutionException, InterruptedException {
         while(!subtaskPrefix.equals(ServiceConfig.END_DISTRIBUTE)) {
-//            setAvailableNodes();
-            setNodesForTest();
+            setAvailableNodes();
+//            setNodesForTest();
             if(noAvailableNodes()) return ServiceConfig.NO_AVAILABLE_NODES_MESSAGE;
             this.es = Executors.newCachedThreadPool();
             String s = distributeWorkOnce();
