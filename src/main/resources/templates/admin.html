@@ -102,7 +102,7 @@
                         type: 'GET',
                         success: (resp) => {
                             if (resp.code == 0) {
-                                this.data.nodes = resp.data
+                                this.nodes = resp.data
                             } else {
                                 alert(resp.msg)
                             }
