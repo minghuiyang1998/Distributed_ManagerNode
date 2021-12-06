@@ -49,6 +49,7 @@
                         },
                         success: (resp) => {
                             this.isLoading = false;
+                            this.btnText = "submit"
                             if (resp.code == 0) {
                                 this.cracked = resp.data;
                             } else {
@@ -61,7 +62,7 @@
                         this.isLoading = false;
                         this.btnText = "submit"
                         this.cracked = "timeout!";
-                    }, 120000);
+                    }, 10000);
                 }
             }
         })
