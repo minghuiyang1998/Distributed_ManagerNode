@@ -69,7 +69,7 @@ public class SocketThread implements Callable<String> {
     @Override
     public String call() {
         sendData();
-        System.out.println("IP: " + this.ip + " Massage sent successfully...");
+        System.out.println("IP: " + this.ip + " Message sent successfully...");
         String subtaskRes = receiveData();
         System.out.println("IP: " + this.ip + " Received message " + subtaskRes);
         if(subtaskRes.equals(""))  subtaskRes = this.ip;
