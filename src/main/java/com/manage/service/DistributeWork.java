@@ -19,11 +19,19 @@ public class DistributeWork {
     ArrayList<WorkNode> availableNodes;
     private String subtaskPrefix;
     private String md5Password;
+    private int bitNum = 2;
 
     public DistributeWork() {
-        this.subtaskPrefix = "aa";
         this.futures = new Vector<>();
         this.availableNodes = new ArrayList<>();
+    }
+
+    public void setBitNum(int bitNum) {
+        this.bitNum = bitNum;
+    }
+
+    public int getBitNum() {
+        return bitNum;
     }
 
     public void setSubtaskPrefix(String subtaskPrefix) {
@@ -40,11 +48,12 @@ public class DistributeWork {
 
     public String distributeWork() throws IOException, ExecutionException, InterruptedException {
         while(!subtaskPrefix.equals(ServiceConfig.END_DISTRIBUTE)) {
-//            setAvailableNodes();
-            setNodesForTest();
-            this.es = Executors.newCachedThreadPool();
+            setAvailableNodes();
+//            setNodesForTest();
             if(noAvailableNodes()) return ServiceConfig.NO_AVAILABLE_NODES_MESSAGE;
+            this.es = Executors.newCachedThreadPool();
             String s = distributeWorkOnce();
+            if(s.contains(ServiceConfig.SOCKET_ERROR_MESSAGE1) || s.contains(ServiceConfig.SOCKET_ERROR_MESSAGE2)) return s;
             if(!s.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
                 s = ServiceConfig.FIND_PWD_MESSAGE + s;
                 return s;
@@ -75,22 +84,25 @@ public class DistributeWork {
 
     public void setNodesForTest() {
         WorkNode workNode1 = new WorkNode("128.197.11.36", "58001");
-        WorkNode workNode2 = new WorkNode("128.197.11.40", "58001");
+        WorkNode workNode2 = new WorkNode("128.197.11.45", "58001");
+        WorkNode workNode3 = new WorkNode("128.197.11.40", "58001");
         availableNodes.add(workNode1);
         availableNodes.add(workNode2);
+        availableNodes.add(workNode3);
     }
 
-    public String distributeWorkOnce() throws IOException, ExecutionException, InterruptedException {
+    public String distributeWorkOnce() throws ExecutionException, InterruptedException {
         for(WorkNode workNode: availableNodes) {
+            if(subtaskPrefix.equals(ServiceConfig.END_DISTRIBUTE)) break;
             String message = subtaskPrefix + "," + md5Password;
-            System.out.println("message: " + message);
             String ip = workNode.getIP();
             int port = Integer.parseInt(workNode.getPort());
             System.out.println("IP:" + ip + " Port: " + port + " Establishing socket...");
             SocketThread socketThread = new SocketThread(ip, port, message);
+            if(socketThread.socketEstablishError)
+                return socketEstablishErr(socketThread);
             Future<String> future = es.submit(socketThread);
             futures.add(future);
-            if(subtaskPrefix.equals(ServiceConfig.END_DISTRIBUTE)) break;
             modifyPrefix();
         }
 
@@ -102,6 +114,10 @@ public class DistributeWork {
 
         for(Future<String> future: futures) {
             String ret = future.get();
+            if(testIp(ret)) {
+                futures.clear();
+                return socketConnErr(ret);
+            }
             if(!ret.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
                 futures.clear();
                 return ret;
@@ -111,7 +127,34 @@ public class DistributeWork {
         return ServiceConfig.NOT_FOUND_MESSAGE;
     }
 
+    public boolean testIp(String str) {
+        for(int i = 0; i < str.length(); i++) {
+            if(str.charAt(i) == '.') return true;
+        }
+        return false;
+    }
+
+    private String socketEstablishErr(SocketThread socketThread) {
+        String ret = ServiceConfig.SOCKET_ERROR_MESSAGE1;
+        ret += "\nSocket with worker node " + socketThread.getIp() + " failed to set up.";
+        return ret;
+    }
+
+    private String socketConnErr(String ip) {
+        String ret = ServiceConfig.SOCKET_ERROR_MESSAGE2;
+        ret += "\nSocket with worker node " + ip + " connection broke down.";
+        return ret;
+    }
+
     private void modifyPrefix() {
+        if(this.bitNum == 1) {
+            modifyPrefix1();
+        } else if(this.bitNum == 2) {
+            modifyPrefix2();
+        }
+    }
+
+    private void modifyPrefix2() {
         StringBuilder strBuilder = new StringBuilder(subtaskPrefix);
         char first = subtaskPrefix.charAt(0);
         char second = subtaskPrefix.charAt(1);
@@ -134,4 +177,17 @@ public class DistributeWork {
         subtaskPrefix = strBuilder.toString();
     }
 
+    private void modifyPrefix1() {
+        StringBuilder stringBuilder = new StringBuilder(subtaskPrefix);
+        char c = subtaskPrefix.charAt(0);
+        if(c == 'z') {
+            stringBuilder.setCharAt(0, 'A');
+        } else if(c == 'Z') {
+            subtaskPrefix = ServiceConfig.END_DISTRIBUTE;
+            return;
+        } else {
+            stringBuilder.setCharAt(0, (char)(c+1));
+        }
+        subtaskPrefix = stringBuilder.toString();
+    }
 }
