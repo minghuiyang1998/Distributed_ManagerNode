@@ -1,6 +1,5 @@
 package com.manage.dao;
 
-import com.manage.controller.WorkNode;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -28,9 +27,8 @@ public class NodesCenter {
         return null;
     }
 
-    public static BlockingQueue<WorkNode> getQueue() {
-        return workNodeQueue;
-    public BlockingQueue<WorkNode> getWorkNodeQueue() {
+
+    public static BlockingQueue<WorkNode> getWorkNodeQueue() {
         return workNodeQueue;
     }
 

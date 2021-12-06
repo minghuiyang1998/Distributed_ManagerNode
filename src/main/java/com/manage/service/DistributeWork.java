@@ -4,7 +4,6 @@ import com.manage.dao.WorkNode;
 import com.manage.dao.NodesCenter;
 import org.springframework.stereotype.Service;
 
-import javax.security.auth.login.Configuration;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Vector;
@@ -41,8 +40,8 @@ public class DistributeWork {
 
     public String distributeWork() throws IOException, ExecutionException, InterruptedException {
         while(!subtaskPrefix.equals(ServiceConfig.END_DISTRIBUTE)) {
-            setAvailableNodes();
-//            setNodesForTest();
+//            setAvailableNodes();
+            setNodesForTest();
             this.es = Executors.newCachedThreadPool();
             if(noAvailableNodes()) return ServiceConfig.NO_AVAILABLE_NODES_MESSAGE;
             String s = distributeWorkOnce();
@@ -66,7 +65,7 @@ public class DistributeWork {
     }
 
     public void setAvailableNodes() {
-        for(WorkNode workNode: NodesCenter.getQueue()) {
+        for(WorkNode workNode: NodesCenter.getWorkNodeQueue()) {
             if(workNode.isAvailable()) {
                 availableNodes.add(workNode);
                 workNode.setAvailable(false);
