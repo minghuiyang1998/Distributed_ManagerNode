@@ -9,6 +9,15 @@ public class ServiceConfig {
     public static final String START_PREFIX = "aa";
     public static final String END_DISTRIBUTE = "End";
 
+
+    public static String setInitialPredix(int bitNum) {
+        StringBuilder ret = new StringBuilder();
+        for(int i = 0; i < bitNum; i++) {
+            ret.append('a');
+        }
+        return ret.toString();
+    }
+
     public static String[] parse(String res) {
         String code = "", message = "", data = "";
         int i, j;

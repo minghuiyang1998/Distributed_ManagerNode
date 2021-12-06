@@ -19,11 +19,19 @@ public class DistributeWork {
     ArrayList<WorkNode> availableNodes;
     private String subtaskPrefix;
     private String md5Password;
+    private int bitNum = 2;
 
     public DistributeWork() {
-        this.subtaskPrefix = "aa";
         this.futures = new Vector<>();
         this.availableNodes = new ArrayList<>();
+    }
+
+    public void setBitNum(int bitNum) {
+        this.bitNum = bitNum;
+    }
+
+    public int getBitNum() {
+        return bitNum;
     }
 
     public void setSubtaskPrefix(String subtaskPrefix) {
@@ -75,9 +83,9 @@ public class DistributeWork {
     }
 
     public void setNodesForTest() {
-        WorkNode workNode1 = new WorkNode("128.197.11.36", "58219");
-        WorkNode workNode2 = new WorkNode("128.197.11.45", "58219");
-        WorkNode workNode3 = new WorkNode("128.197.11.40", "58219");
+        WorkNode workNode1 = new WorkNode("128.197.11.36", "58001");
+        WorkNode workNode2 = new WorkNode("128.197.11.45", "58001");
+        WorkNode workNode3 = new WorkNode("128.197.11.40", "58001");
         availableNodes.add(workNode1);
         availableNodes.add(workNode2);
         availableNodes.add(workNode3);
@@ -138,9 +146,15 @@ public class DistributeWork {
         return ret;
     }
 
-
-
     private void modifyPrefix() {
+        if(this.bitNum == 1) {
+            modifyPrefix1();
+        } else if(this.bitNum == 2) {
+            modifyPrefix2();
+        }
+    }
+
+    private void modifyPrefix2() {
         StringBuilder strBuilder = new StringBuilder(subtaskPrefix);
         char first = subtaskPrefix.charAt(0);
         char second = subtaskPrefix.charAt(1);
@@ -163,4 +177,17 @@ public class DistributeWork {
         subtaskPrefix = strBuilder.toString();
     }
 
+    private void modifyPrefix1() {
+        StringBuilder stringBuilder = new StringBuilder(subtaskPrefix);
+        char c = subtaskPrefix.charAt(0);
+        if(c == 'z') {
+            stringBuilder.setCharAt(0, 'A');
+        } else if(c == 'Z') {
+            subtaskPrefix = ServiceConfig.END_DISTRIBUTE;
+            return;
+        } else {
+            stringBuilder.setCharAt(0, (char)(c+1));
+        }
+        subtaskPrefix = stringBuilder.toString();
+    }
 }

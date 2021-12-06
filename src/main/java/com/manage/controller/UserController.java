@@ -4,6 +4,7 @@ import com.manage.dao.NodesCenter;
 import com.manage.service.DistributeWork;
 import com.manage.service.ServiceConfig;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,11 +25,18 @@ public class UserController {
     public UserResponse crackPassword(RequestBody body) throws IOException, ExecutionException, InterruptedException {
         String md5Password = body.getPasswordMd5();
         distributeWork.setMd5Password(md5Password);
-        distributeWork.setSubtaskPrefix(ServiceConfig.START_PREFIX);
+        distributeWork.setSubtaskPrefix(ServiceConfig.setInitialPredix(distributeWork.getBitNum()));
         System.out.println("md5Pwd: " + distributeWork.getMd5Password());
         String res = distributeWork.distributeWork();
         String[] parseStr = ServiceConfig.parse(res);
         return new UserResponse(parseStr[0], parseStr[1], parseStr[2]);
+    }
+
+    @PostMapping("/set")
+    @ResponseBody
+    public void setPrefixBit(@RequestParam("bitNum")int bitNum) {
+        distributeWork.setBitNum(bitNum);
+        System.out.println("Set bit number " + bitNum + " successfully");
     }
 
     class UserResponse {
