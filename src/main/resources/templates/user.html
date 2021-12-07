@@ -13,20 +13,49 @@
         <input v-model="password" placeholder="password"
                maxlength="5" pattern="[a-z]{5}"
                autocapitalize="off" autocorrect="off" autofocus="autofocus">
-        <button @click="onSubmit">crack</button>
-        <div v-if="cracked.length">{{cracked}}</div>
+        <button @click="onSubmit" class="sub-btn">
+            {{btnText}}
+            <div v-if="isLoading" class="loading">
+                <span>.</span>
+                <span>.</span>
+                <span>.</span>
+            </div>
+        </button>
+        <div v-if="md5.length">md5: {{md5}}</div>
+        <div v-if="cracked.length">cracked: {{cracked}}</div>
     </div>
     <script>
         const postPassWord = new Vue({
             el: '#user-crack',
             data: {
+                md5:"",
                 password: "",
                 cracked: "",
+                isLoading: false,
+                btnText: "submit"
             },
             methods: {
                 onSubmit() {
+                    if (this.password.length < 5) {
+                        alert("invalid input! please enter 5 character!")
+                        return;
+                    }
+                    // clear prev
+                    this.cracked = "";
+                    this.md5 = "";
+                    if (this.isLoading) return;
+
+                    // start
+                    this.isLoading = true;
+                    this.btnText = ""
                     const passwordMd5 = $.md5(this.password);
-                    console.log(passwordMd5);
+                    this.md5 = passwordMd5;
+                    const timeout = setTimeout(() => {
+                        this.isLoading = false;
+                        this.btnText = "submit"
+                        this.cracked = "timeout!";
+                    }, 60000);
+
                     $.ajax({
                         url: `/user/crack`,
                         type: 'POST',
@@ -34,6 +63,10 @@
                             passwordMd5,
                         },
                         success: (resp) => {
+                            // clear loading
+                            this.isLoading = false;
+                            this.btnText = "submit"
+                            clearTimeout(timeout)
                             if (resp.code == 0) {
                                 this.cracked = resp.data;
                             } else {
