@@ -102,12 +102,12 @@ public class DistributeWork {
     }
 
     public void setNodesForTest() {
-        WorkNode workNode1 = new WorkNode("128.197.11.36", "58001");
-        WorkNode workNode2 = new WorkNode("128.197.11.45", "58001");
-        WorkNode workNode3 = new WorkNode("128.197.11.40", "58001");
+        WorkNode workNode1 = new WorkNode("164.67.126.17", "10000");
+//        WorkNode workNode2 = new WorkNode("128.197.11.45", "58001");
+//        WorkNode workNode3 = new WorkNode("128.197.11.40", "58001");
         NodesCenter.getWorkNodeQueue().add(workNode1);
-        NodesCenter.getWorkNodeQueue().add(workNode2);
-        NodesCenter.getWorkNodeQueue().add(workNode3);
+//        NodesCenter.getWorkNodeQueue().add(workNode2);
+//        NodesCenter.getWorkNodeQueue().add(workNode3);
     }
 
     public String distributeWorkOnce() throws ExecutionException, InterruptedException {
