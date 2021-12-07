@@ -4,25 +4,27 @@ import com.manage.dao.WorkNode;
 import com.manage.dao.NodesCenter;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 @Service
 public class DistributeWork {
     Vector<Future<String>> futures;
     ExecutorService es;
     ArrayList<WorkNode> availableNodes;
+    Map<String, WorkNode> ipNodeMap;
     private String subtaskPrefix;
     private String md5Password;
     private int bitNum = 2;
+    private String lastTaskPrefix;
+//    private int count = 0;
 
     public DistributeWork() {
         this.futures = new Vector<>();
+        this.ipNodeMap = new HashMap<>();
         this.availableNodes = new ArrayList<>();
     }
 
@@ -32,6 +34,12 @@ public class DistributeWork {
 
     public int getBitNum() {
         return bitNum;
+    }
+
+    public void setMap() {
+        for(WorkNode workNode: NodesCenter.getWorkNodeQueue()) {
+            ipNodeMap.put(workNode.getIP(), workNode);
+        }
     }
 
     public void setSubtaskPrefix(String subtaskPrefix) {
@@ -46,14 +54,19 @@ public class DistributeWork {
         return md5Password;
     }
 
-    public String distributeWork() throws IOException, ExecutionException, InterruptedException {
+    public String distributeWork() throws InterruptedException, ExecutionException {
+//        if(count == 0) {
+//            setNodesForTest();
+//            count++;
+//        }
+        setAllNodesAvailable();
+        setMap();
         while(!subtaskPrefix.equals(ServiceConfig.END_DISTRIBUTE)) {
             setAvailableNodes();
-//            setNodesForTest();
             if(noAvailableNodes()) return ServiceConfig.NO_AVAILABLE_NODES_MESSAGE;
             this.es = Executors.newCachedThreadPool();
             String s = distributeWorkOnce();
-            if(s.contains(ServiceConfig.SOCKET_ERROR_MESSAGE1) || s.contains(ServiceConfig.SOCKET_ERROR_MESSAGE2)) return s;
+            if(s.equals(ServiceConfig.NO_AVAILABLE_NODES_MESSAGE)) return s;
             if(!s.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
                 s = ServiceConfig.FIND_PWD_MESSAGE + s;
                 return s;
@@ -74,11 +87,17 @@ public class DistributeWork {
     }
 
     public void setAvailableNodes() {
+        availableNodes.clear();
         for(WorkNode workNode: NodesCenter.getWorkNodeQueue()) {
             if(workNode.isAvailable()) {
                 availableNodes.add(workNode);
-                workNode.setAvailable(false);
             }
+        }
+    }
+
+    public void setAllNodesAvailable() {
+        for(WorkNode workNode: NodesCenter.getWorkNodeQueue()) {
+            workNode.setAvailable(true);
         }
     }
 
@@ -86,45 +105,56 @@ public class DistributeWork {
         WorkNode workNode1 = new WorkNode("128.197.11.36", "58001");
         WorkNode workNode2 = new WorkNode("128.197.11.45", "58001");
         WorkNode workNode3 = new WorkNode("128.197.11.40", "58001");
-        availableNodes.add(workNode1);
-        availableNodes.add(workNode2);
-        availableNodes.add(workNode3);
+        NodesCenter.getWorkNodeQueue().add(workNode1);
+        NodesCenter.getWorkNodeQueue().add(workNode2);
+        NodesCenter.getWorkNodeQueue().add(workNode3);
     }
 
     public String distributeWorkOnce() throws ExecutionException, InterruptedException {
+        lastTaskPrefix = subtaskPrefix;
         for(WorkNode workNode: availableNodes) {
+            System.out.println(availableNodes.size());
             if(subtaskPrefix.equals(ServiceConfig.END_DISTRIBUTE)) break;
             String message = subtaskPrefix + "," + md5Password;
             String ip = workNode.getIP();
             int port = Integer.parseInt(workNode.getPort());
             System.out.println("IP:" + ip + " Port: " + port + " Establishing socket...");
             SocketThread socketThread = new SocketThread(ip, port, message);
-            if(socketThread.socketEstablishError)
-                return socketEstablishErr(socketThread);
+            if(socketThread.socketEstablishError) {
+                System.out.println("WorkNode with ip " + socketThread.ip + "crashed");
+                workNode.setAvailable(false);
+                if(allWorkNodeFalse()) {
+                    return ServiceConfig.NO_AVAILABLE_NODES_MESSAGE;
+                }
+            }
             Future<String> future = es.submit(socketThread);
             futures.add(future);
             modifyPrefix();
         }
-
         es.shutdown();
-        for(WorkNode workNode: availableNodes) {
-            workNode.setAvailable(true);
-        }
         availableNodes.clear();
 
         for(Future<String> future: futures) {
             String ret = future.get();
-            if(testIp(ret)) {
-                futures.clear();
-                return socketConnErr(ret);
-            }
-            if(!ret.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
+            if(!ret.equals(ServiceConfig.NOT_FOUND_MESSAGE) && !ret.equals("") && !testIp(ret)) {
                 futures.clear();
                 return ret;
             }
+            if(testIp(ret)) {
+                subtaskPrefix = lastTaskPrefix;
+                ipNodeMap.get(ret).setAvailable(false);
+            }
+            if(ret.equals("")) subtaskPrefix = lastTaskPrefix;
         }
         futures.clear();
         return ServiceConfig.NOT_FOUND_MESSAGE;
+    }
+
+    boolean allWorkNodeFalse() {
+        for(WorkNode workNode: NodesCenter.getWorkNodeQueue()) {
+            if(workNode.isAvailable()) return false;
+        }
+        return true;
     }
 
     public boolean testIp(String str) {
@@ -132,18 +162,6 @@ public class DistributeWork {
             if(str.charAt(i) == '.') return true;
         }
         return false;
-    }
-
-    private String socketEstablishErr(SocketThread socketThread) {
-        String ret = ServiceConfig.SOCKET_ERROR_MESSAGE1;
-        ret += "\nSocket with worker node " + socketThread.getIp() + " failed to set up.";
-        return ret;
-    }
-
-    private String socketConnErr(String ip) {
-        String ret = ServiceConfig.SOCKET_ERROR_MESSAGE2;
-        ret += "\nSocket with worker node " + ip + " connection broke down.";
-        return ret;
     }
 
     private void modifyPrefix() {
