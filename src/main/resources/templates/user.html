@@ -78,7 +78,124 @@
                 }
             }
         })
+    </script>
+    <div id="crack-multi" >
+        <div class="form">
+            <input v-model="numbs" placeholder="random numbers"
+                   maxlength="5" pattern="[0-9]{5}"
+                   autocapitalize="off" autocorrect="off" autofocus="autofocus">
+            <button @click="onSubmit" class="sub-btn">
+                {{btnText}}
+                <div v-if="isLoading" class="loading">
+                    <span>.</span>
+                    <span>.</span>
+                    <span>.</span>
+                </div>
+            </button>
+        </div>
+        <div class="random" v-if="cases.length">
+            <div class="rand-item" v-for="c in cases">
+                <p v-if="c.password">password: {{c.password}}</p>
+                <p v-if="c.md5">md5: {{c.md5}}</p>
+                <p v-if="c.cracked">cracked: {{c.cracked}}</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        const postMultiPassWord = new Vue({
+            el: '#crack-multi',
+            data: {
+                numbs: 10,
+                cases: [],
+                isLoading: false,
+                btnText: "submit"
+            },
+            methods: {
+                randomPass() {
+                    let pass = "";
+                    for (let i = 0; i < 5; i++) {
+                        const MIN = 97;
+                        const MAX = 122
+                        min = Math.ceil(MIN);
+                        max = Math.floor(MAX);
+                        const code =  Math.floor(Math.random() * (MAX - MIN + 1)) + MIN; //含最大值，含最小值
+                        const c = String.fromCharCode(code);
+                        pass += c;
+                    }
+                    console.log(pass)
+                    return pass;
+                },
+                submitOne(password, md5) {
+                  return new Promise((resolve, reject) => {
+                      $.ajax({
+                          url: `/user/crack`,
+                          type: 'POST',
+                          data: {
+                              passwordMd5: md5,
+                          },
+                          success: (resp) => {
+                              if (resp.code === 0) {
+                                  const data = {
+                                      password,
+                                      md5,
+                                      cracked: resp.data
+                                  }
+                                  resolve(data)
+                              } else {
+                                  alert( `cracked [${password}] fail:` + resp.msg)
+                                  reject();
+                              }
+                          }
+                      })
+                  });
+                },
+                onSubmit() {
+                    if (this.numbs <= 0) {
+                        alert("invalid integer! please enter number larger than 0!")
+                        return;
+                    }
+                    // clear prev
+                    this.cases = [];
+                    if (this.isLoading) return;
 
+                    // start
+                    this.isLoading = true;
+                    this.btnText = ""
+
+                    // random numbs times
+                    let passList = [];
+                    for (let i = 0; i < this.numbs; i++) {
+                        const pass = this.randomPass();
+                        passList.push(pass);
+                    }
+
+                    const list = passList.map((pass) => {
+                        return {
+                            password: pass,
+                            md5: $.md5(pass),
+                        }
+                    });
+
+                    this.cases = list;
+
+                    const timeout = setTimeout(() => {
+                        this.isLoading = false;
+                        this.btnText = "submit"
+                        this.cracked = "timeout!";
+                    }, this.numbs * 60000);
+
+                    const promiseList = list.map(({password, md5}) => this.submitOne(password, md5))
+                    Promise.all(promiseList).then((results) => {
+                        this.cases = results;
+                    }).finally(() => {
+                        // clear loading
+                        this.isLoading = false;
+                        this.btnText = "submit"
+                        clearTimeout(timeout)
+                    })
+                }
+            }
+        })
     </script>
 </body>
 </html>
