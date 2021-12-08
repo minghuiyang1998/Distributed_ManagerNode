@@ -68,7 +68,7 @@
                         },
                         success: (resp) => {
                             if (resp.code == 0) {
-                                if (this.loading) {
+                                if (this.isLoading) {
                                     this.cracked = resp.data;
                                 }
                             } else {
