@@ -22,7 +22,7 @@ public class UserController {
 
     @PostMapping("/user/crack")
     @ResponseBody
-    public UserResponse crackPassword(RequestBody body) throws IOException, ExecutionException, InterruptedException {
+    public UserResponse crackPassword(RequestBody body) {
         String md5Password = body.getPasswordMd5();
         distributeWork.setMd5Password(md5Password);
         distributeWork.setSubtaskPrefix(ServiceConfig.setInitialPredix(distributeWork.getBitNum()));

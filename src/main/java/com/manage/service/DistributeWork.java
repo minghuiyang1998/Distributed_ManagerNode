@@ -55,7 +55,7 @@ public class DistributeWork {
         return md5Password;
     }
 
-    public String distributeWork() throws InterruptedException, ExecutionException {
+    public String distributeWork() {
 //        if(count == 0) {
 //            setNodesForTest();
 //            count++;
@@ -65,23 +65,34 @@ public class DistributeWork {
         while(!subtaskPrefix.equals(ServiceConfig.END_DISTRIBUTE)) {
             setAvailableNodes();
             if(noAvailableNodes()) return ServiceConfig.NO_AVAILABLE_NODES_MESSAGE;
-            this.es = Executors.newCachedThreadPool();
-            String s = distributeWorkOnce();
-            if(s.equals(ServiceConfig.NO_AVAILABLE_NODES_MESSAGE)) return s;
-            if(!s.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
-                s = ServiceConfig.FIND_PWD_MESSAGE + s;
-                return s;
+            try {
+                this.es = Executors.newCachedThreadPool();
+                String s = distributeWorkOnce();
+                if (s.equals(ServiceConfig.NO_AVAILABLE_NODES_MESSAGE)) return s;
+                if (!s.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
+                    s = ServiceConfig.FIND_PWD_MESSAGE + s;
+                    return s;
+                }
+            } catch (InterruptedException ie) {
+                ie.printStackTrace();
+            } catch (ExecutionException ee) {
+                ee.printStackTrace();
             }
         }
         return ServiceConfig.NOT_FOUND_MESSAGE;
     }
 
-    public boolean noAvailableNodes() throws InterruptedException {
+    public boolean noAvailableNodes() {
         int count = 0;
         while(availableNodes.size() == 0) {
             if(count == 2) return true;
             count++;
-            Thread.sleep(1000);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ie) {
+                ie.printStackTrace();
+                System.out.println("Current thread is interrupted.");
+            }
             setAvailableNodes();
         }
         return false;
