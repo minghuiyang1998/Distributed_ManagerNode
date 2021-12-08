@@ -1,6 +1,7 @@
 package com.manage.service;
 
 import java.io.*;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.util.concurrent.Callable;
 
@@ -18,6 +19,7 @@ public class SocketThread implements Callable<String> {
             this.socket = new Socket(ip, portNum);
         } catch (Exception e) {
             System.out.println("Socket establish time out");
+            e.printStackTrace();
             socketEstablishError = true;
         }
     }
@@ -30,6 +32,7 @@ public class SocketThread implements Callable<String> {
             printWriter.flush();
         } catch (IOException e) {
             System.out.println("Socket Crash, sending data error");
+            e.printStackTrace();
             socketCrashError = true;
         }
 
@@ -46,6 +49,7 @@ public class SocketThread implements Callable<String> {
                 long endTime = System.currentTimeMillis();
                 if((endTime - startTime)/1000 > 15) {
                     System.out.println("Socket Crash, receiving data error");
+                    reply = ServiceConfig.SOCKET_ERROR_MESSAGE2;
                     socketCrashError = true;
                 }
             }
@@ -68,14 +72,22 @@ public class SocketThread implements Callable<String> {
 
     @Override
     public String call() {
-        sendData();
-        System.out.println("IP: " + this.ip + " Message sent successfully...");
-        String subtaskRes = receiveData();
-        System.out.println("IP: " + this.ip + " Received message " + subtaskRes);
-        if(subtaskRes.equals(""))  subtaskRes = this.ip;
-        closeSocket();
-        System.out.println("IP: " + this.ip + " Socket closed successfully...");
-        return subtaskRes;
+        if(socket != null) {
+            sendData();
+            System.out.println("IP: " + this.ip + " Message sent successfully...");
+
+            String subtaskRes = receiveData();
+            String subtaskStr = subtaskRes.split(",")[0];
+            if(subtaskStr.length() != 5 && !subtaskStr.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
+                subtaskRes = this.ip;
+            }
+            System.out.println("IP: " + this.ip + " Received message " + subtaskRes);
+            if (subtaskRes.equals(ServiceConfig.SOCKET_ERROR_MESSAGE2)) subtaskRes = this.ip;
+            closeSocket();
+            System.out.println("IP: " + this.ip + " Socket closed successfully...");
+            return subtaskRes;
+        }
+        return "";
     }
 
     public String getIp() {

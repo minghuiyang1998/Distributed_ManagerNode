@@ -82,8 +82,8 @@
     </script>
     <div id="search-node" >
         <button class="search-btn" @click="onSearchClick">find all available</button>
-        <div class="search">
-            <div v-if="nodes.length" v-for="node in nodes" class="search-item">
+        <div class="search" v-if="nodes.length">
+            <div v-for="node in nodes" class="search-item">
                 <p>IP: {{node.ip}}</p>
                 <p>PORT: {{node.port}}</p>
             </div>

@@ -29,7 +29,8 @@ public class UserController {
         System.out.println("md5Pwd: " + distributeWork.getMd5Password());
         String res = distributeWork.distributeWork();
         String[] parseStr = ServiceConfig.parse(res);
-        return new UserResponse(parseStr[0], parseStr[1], parseStr[2]);
+        UserResponse responseBody = new UserResponse(parseStr[0], parseStr[1], parseStr[2]);
+        return responseBody;
     }
 
     @PostMapping("/set")
