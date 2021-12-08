@@ -60,6 +60,7 @@ public class DistributeWork {
 //            setNodesForTest();
 //            count++;
 //        }
+        long startTime = System.currentTimeMillis();
         setAllNodesAvailable();
         setMap();
         while(!subtaskPrefix.equals(ServiceConfig.END_DISTRIBUTE)) {
@@ -72,6 +73,10 @@ public class DistributeWork {
                 if (s.equals(ServiceConfig.NO_AVAILABLE_NODES_MESSAGE)) return s;
                 if (!s.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
                     s = ServiceConfig.FIND_PWD_MESSAGE + s;
+                    long time = System.currentTimeMillis() - startTime;
+                    // total time found a password.
+
+
                     return s;
                 }
             } catch (InterruptedException ie) {
@@ -80,6 +85,9 @@ public class DistributeWork {
                 ee.printStackTrace();
             }
         }
+        long time = System.currentTimeMillis() - startTime;
+        // total time not found a password.
+
         return ServiceConfig.NOT_FOUND_MESSAGE;
     }
 
