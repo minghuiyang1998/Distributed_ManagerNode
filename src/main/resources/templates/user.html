@@ -147,7 +147,7 @@
                               passwordMd5: md5,
                           },
                           success: (resp) => {
-                              if (resp.code === 0) {
+                              if (resp.code == 0) {
                                   const data = {
                                       password,
                                       md5,
@@ -162,8 +162,8 @@
                   });
                 },
                 onSubmit() {
-                    if (this.numbs <= 0) {
-                        alert("invalid integer! please enter number larger than 0!")
+                    if (this.numbs <= 0 &&  this.numbs > 20) {
+                        alert("invalid integer! please enter number > 0 and <= 20!")
                         return;
                     }
                     // clear prev
