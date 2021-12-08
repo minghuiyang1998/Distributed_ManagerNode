@@ -14,16 +14,19 @@ import java.util.concurrent.ExecutionException;
 @RestController
 public class UserController {
     private final NodesCenter nodesCenter;
-    private final DistributeWork distributeWork;
-    public UserController(NodesCenter nodesCenter, DistributeWork distributeWork) {
+    private int bitNum;
+
+    public UserController(NodesCenter nodesCenter) {
         this.nodesCenter = nodesCenter;
-        this.distributeWork = distributeWork;
+        bitNum = 2;
     }
 
     @PostMapping("/user/crack")
     @ResponseBody
     public UserResponse crackPassword(RequestBody body) {
+        DistributeWork distributeWork = new DistributeWork();
         String md5Password = body.getPasswordMd5();
+        distributeWork.setBitNum(bitNum);
         distributeWork.setMd5Password(md5Password);
         distributeWork.setSubtaskPrefix(ServiceConfig.setInitialPredix(distributeWork.getBitNum()));
         System.out.println("md5Pwd: " + distributeWork.getMd5Password());
@@ -36,7 +39,7 @@ public class UserController {
     @PostMapping("/set")
     @ResponseBody
     public void setPrefixBit(@RequestParam("bitNum")int bitNum) {
-        distributeWork.setBitNum(bitNum);
+        this.bitNum = bitNum;
         System.out.println("Set bit number " + bitNum + " successfully");
     }
 

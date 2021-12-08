@@ -66,7 +66,8 @@ public class DistributeWork {
             setAvailableNodes();
             if(noAvailableNodes()) return ServiceConfig.NO_AVAILABLE_NODES_MESSAGE;
             try {
-                this.es = Executors.newCachedThreadPool();
+                this.es = new ThreadPoolExecutor(3, 10, 60,
+                        TimeUnit.SECONDS, new ArrayBlockingQueue<>(20));
                 String s = distributeWorkOnce();
                 if (s.equals(ServiceConfig.NO_AVAILABLE_NODES_MESSAGE)) return s;
                 if (!s.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
