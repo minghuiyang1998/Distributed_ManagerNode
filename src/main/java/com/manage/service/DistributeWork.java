@@ -1,5 +1,6 @@
 package com.manage.service;
 
+import com.manage.dao.LogWriter;
 import com.manage.dao.WorkNode;
 import com.manage.dao.NodesCenter;
 import org.springframework.stereotype.Service;
@@ -142,8 +143,11 @@ public class DistributeWork {
                 String time = strings[1];
                 if(ret.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
                     // not found time
+                    LogWriter.write(time + "\tn");
                 } else {
                     // found time
+                    LogWriter.write(time + "\ty");
+
                 }
             }
             if(!ret.equals(ServiceConfig.NOT_FOUND_MESSAGE) && !ret.equals("") && !testIp(ret)) {
