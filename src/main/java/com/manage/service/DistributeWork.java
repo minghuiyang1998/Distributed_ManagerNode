@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.*;
+import java.util.regex.Pattern;
 
 @Service
 public class DistributeWork {
@@ -102,12 +103,12 @@ public class DistributeWork {
     }
 
     public void setNodesForTest() {
-        WorkNode workNode1 = new WorkNode("128.197.11.36", "58001");
-        WorkNode workNode2 = new WorkNode("128.197.11.45", "58001");
-        WorkNode workNode3 = new WorkNode("128.197.11.40", "58001");
+        WorkNode workNode1 = new WorkNode("164.67.126.17", "10000");
+//        WorkNode workNode2 = new WorkNode("128.197.11.45", "58001");
+//        WorkNode workNode3 = new WorkNode("128.197.11.40", "58001");
         NodesCenter.getWorkNodeQueue().add(workNode1);
-        NodesCenter.getWorkNodeQueue().add(workNode2);
-        NodesCenter.getWorkNodeQueue().add(workNode3);
+//        NodesCenter.getWorkNodeQueue().add(workNode2);
+//        NodesCenter.getWorkNodeQueue().add(workNode3);
     }
 
     public String distributeWorkOnce() throws ExecutionException, InterruptedException {
@@ -135,7 +136,16 @@ public class DistributeWork {
         availableNodes.clear();
 
         for(Future<String> future: futures) {
-            String ret = future.get();
+            String[] strings = future.get().split(",");
+            String ret = strings[0];
+            if(strings.length == 2) {
+                String time = strings[1];
+                if(ret.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
+                    // not found time
+                } else {
+                    // found time
+                }
+            }
             if(!ret.equals(ServiceConfig.NOT_FOUND_MESSAGE) && !ret.equals("") && !testIp(ret)) {
                 futures.clear();
                 return ret;
@@ -158,10 +168,8 @@ public class DistributeWork {
     }
 
     public boolean testIp(String str) {
-        for(int i = 0; i < str.length(); i++) {
-            if(str.charAt(i) == '.') return true;
-        }
-        return false;
+        Pattern ip = Pattern.compile("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
+        return ip.matcher(str).find();
     }
 
     private void modifyPrefix() {
