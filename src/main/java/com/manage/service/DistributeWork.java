@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.*;
+import java.util.regex.Pattern;
 
 @Service
 public class DistributeWork {
@@ -167,10 +168,8 @@ public class DistributeWork {
     }
 
     public boolean testIp(String str) {
-        for(int i = 0; i < str.length(); i++) {
-            if(str.charAt(i) == '.') return true;
-        }
-        return false;
+        Pattern ip = Pattern.compile("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
+        return ip.matcher(str).find();
     }
 
     private void modifyPrefix() {
