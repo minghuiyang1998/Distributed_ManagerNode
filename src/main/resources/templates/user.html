@@ -11,7 +11,7 @@
 <body>
     <div id="user-crack" class="form">
         <input v-model="password" placeholder="password"
-               maxlength="5" pattern="[a-z]{5}"
+               maxlength="5" pattern="[a-zA-Z]{5}" @input="onCheck"
                autocapitalize="off" autocorrect="off" autofocus="autofocus">
         <button @click="onSubmit" class="sub-btn">
             {{btnText}}
@@ -35,6 +35,10 @@
                 btnText: "submit"
             },
             methods: {
+                onCheck() {
+                    const newStr = this.password.replaceAll(/[^a-zA-Z]/g, '');
+                    this.password = newStr;
+                },
                 onSubmit() {
                     if (this.password.length < 5) {
                         alert("invalid input! please enter 5 character!")
@@ -54,7 +58,7 @@
                         this.isLoading = false;
                         this.btnText = "submit"
                         this.cracked = "timeout!";
-                    }, 60000);
+                    }, 5 * 60000);
 
                     $.ajax({
                         url: `/user/crack`,
@@ -63,15 +67,17 @@
                             passwordMd5,
                         },
                         success: (resp) => {
+                            if (resp.code == 0) {
+                                if (this.loading) {
+                                    this.cracked = resp.data;
+                                }
+                            } else {
+                                alert(resp.msg)
+                            }
                             // clear loading
                             this.isLoading = false;
                             this.btnText = "submit"
                             clearTimeout(timeout)
-                            if (resp.code == 0) {
-                                this.cracked = resp.data;
-                            } else {
-                                alert(resp.msg)
-                            }
                             this.password = "";
                         }
                     })
@@ -114,8 +120,15 @@
                 randomPass() {
                     let pass = "";
                     for (let i = 0; i < 5; i++) {
-                        const MIN = 97;
-                        const MAX = 122
+                        let MIN = 97;
+                        let MAX = 122;
+                        if (Math.random() < 0.5) {
+                            MIN = 97; //a
+                            MAX = 122; //z
+                        } else {
+                            MIN = 65; //A
+                            MAX = 90; //Z
+                        }
                         min = Math.ceil(MIN);
                         max = Math.floor(MAX);
                         const code =  Math.floor(Math.random() * (MAX - MIN + 1)) + MIN; //含最大值，含最小值
@@ -143,7 +156,6 @@
                                   resolve(data)
                               } else {
                                   alert( `cracked [${password}] fail:` + resp.msg)
-                                  reject();
                               }
                           }
                       })
@@ -182,7 +194,7 @@
                         this.isLoading = false;
                         this.btnText = "submit"
                         this.cracked = "timeout!";
-                    }, this.numbs * 60000);
+                    }, this.numbs * 5 * 60000);
 
                     const promiseList = list.map(({password, md5}) => this.submitOne(password, md5))
                     Promise.all(promiseList).then((results) => {
