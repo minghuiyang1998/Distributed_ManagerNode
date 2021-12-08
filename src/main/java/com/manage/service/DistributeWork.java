@@ -135,7 +135,16 @@ public class DistributeWork {
         availableNodes.clear();
 
         for(Future<String> future: futures) {
-            String ret = future.get();
+            String[] strings = future.get().split(",");
+            String ret = strings[0];
+            if(strings.length == 2) {
+                String time = strings[1];
+                if(ret.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
+                    // not found time
+                } else {
+                    // found time
+                }
+            }
             if(!ret.equals(ServiceConfig.NOT_FOUND_MESSAGE) && !ret.equals("") && !testIp(ret)) {
                 futures.clear();
                 return ret;

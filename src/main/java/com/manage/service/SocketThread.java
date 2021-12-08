@@ -75,8 +75,10 @@ public class SocketThread implements Callable<String> {
         if(socket != null) {
             sendData();
             System.out.println("IP: " + this.ip + " Message sent successfully...");
+
             String subtaskRes = receiveData();
-            if(subtaskRes.length() != 5 && !subtaskRes.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
+            String subtaskStr = subtaskRes.split(",")[0];
+            if(subtaskStr.length() != 5 && !subtaskStr.equals(ServiceConfig.NOT_FOUND_MESSAGE)) {
                 subtaskRes = this.ip;
             }
             System.out.println("IP: " + this.ip + " Received message " + subtaskRes);
