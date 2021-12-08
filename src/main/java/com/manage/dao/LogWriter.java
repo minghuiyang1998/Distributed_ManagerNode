@@ -5,13 +5,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class LogWriter {
-    private static FileWriter logWriter;
 
     public static void initLogFile() {
         try {
             File myObj = new File("log.txt");
-            FileWriter logWriter = new FileWriter("log.txt", true);
             if (myObj.createNewFile()) {
+                FileWriter logWriter = new FileWriter("log.txt", true);
+
                 logWriter.write("Delay(ms)\tFound\n");
                 logWriter.close();
             }
@@ -23,6 +23,7 @@ public class LogWriter {
 
     public static void write(String str) {
         try {
+            FileWriter logWriter = new FileWriter("log.txt", true);
             logWriter.write(str + "\n");
             logWriter.close();
         } catch (IOException e) {
