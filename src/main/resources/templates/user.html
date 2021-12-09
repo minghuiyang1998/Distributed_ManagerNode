@@ -38,6 +38,8 @@
                 onCheck() {
                     const newStr = this.password.replaceAll(/[^a-zA-Z]/g, '');
                     this.password = newStr;
+                    this.md5 = "";
+                    this.cracked = "";
                 },
                 onSubmit() {
                     if (this.password.length < 5) {
