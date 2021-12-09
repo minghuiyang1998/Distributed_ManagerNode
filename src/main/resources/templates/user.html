@@ -196,11 +196,16 @@
                         this.isLoading = false;
                         this.btnText = "submit"
                         this.cracked = "timeout!";
-                    }, this.numbs * 5 * 60000);
+                        this.cases = this.cases.map((elem) => {
+                            return {...elem, crack: "timeout!"};
+                        })
+                    }, this.cases.length * 5 * 60000);
 
                     const promiseList = list.map(({password, md5}) => this.submitOne(password, md5))
                     Promise.all(promiseList).then((results) => {
-                        this.cases = results;
+                        if (this.isLoading) {
+                            this.cases = results;
+                        }
                     }).finally(() => {
                         // clear loading
                         this.isLoading = false;
