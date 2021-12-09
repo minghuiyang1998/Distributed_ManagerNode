@@ -158,6 +158,7 @@
                                   resolve(data)
                               } else {
                                   alert( `cracked [${password}] fail:` + resp.msg)
+                                  reject();
                               }
                           }
                       })
@@ -195,9 +196,8 @@
                     const timeout = setTimeout(() => {
                         this.isLoading = false;
                         this.btnText = "submit"
-                        this.cracked = "timeout!";
-                        this.cases = this.cases.map((elem) => {
-                            return {...elem, crack: "timeout!"};
+                        this.cases.forEach((elem) => {
+                            elem.cracked = "timeout!";
                         })
                     }, this.cases.length * 5 * 60000);
 
