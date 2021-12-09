@@ -38,6 +38,8 @@
                 onCheck() {
                     const newStr = this.password.replaceAll(/[^a-zA-Z]/g, '');
                     this.password = newStr;
+                    this.md5 = "";
+                    this.cracked = "";
                 },
                 onSubmit() {
                     if (this.password.length < 5) {
@@ -156,6 +158,7 @@
                                   resolve(data)
                               } else {
                                   alert( `cracked [${password}] fail:` + resp.msg)
+                                  reject();
                               }
                           }
                       })
@@ -193,12 +196,16 @@
                     const timeout = setTimeout(() => {
                         this.isLoading = false;
                         this.btnText = "submit"
-                        this.cracked = "timeout!";
-                    }, this.numbs * 5 * 60000);
+                        this.cases.forEach((elem) => {
+                            elem.cracked = "timeout!";
+                        })
+                    }, this.cases.length * 5 * 60000);
 
                     const promiseList = list.map(({password, md5}) => this.submitOne(password, md5))
                     Promise.all(promiseList).then((results) => {
-                        this.cases = results;
+                        if (this.isLoading) {
+                            this.cases = results;
+                        }
                     }).finally(() => {
                         // clear loading
                         this.isLoading = false;
